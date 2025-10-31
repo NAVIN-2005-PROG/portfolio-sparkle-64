@@ -1,3 +1,14 @@
+/**
+ * Application Sidebar Component
+ * 
+ * A collapsible sidebar that provides:
+ * - Navigation menu with active route highlighting
+ * - User profile section with avatar
+ * - AI Assistant section (coming soon)
+ * - Sign out functionality
+ * - Responsive design with icon-only collapsed state
+ */
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -32,6 +43,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+// Navigation menu configuration
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: FileText, label: "My Portfolios", path: "/portfolios" },

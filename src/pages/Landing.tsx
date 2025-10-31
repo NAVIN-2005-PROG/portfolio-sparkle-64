@@ -1,3 +1,14 @@
+/**
+ * Landing Page
+ * 
+ * The main marketing page that showcases:
+ * - Hero section with animated particles
+ * - Key features and benefits
+ * - Comparison with traditional resumes
+ * - Template showcase
+ * - Call-to-action buttons
+ */
+
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { ComparisonSection } from "@/components/ComparisonSection";

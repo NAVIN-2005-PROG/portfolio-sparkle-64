@@ -1,73 +1,207 @@
-# Welcome to your Lovable project
+# PortfolioBuilder - Professional Digital Portfolio Creator
 
-## Project info
+A modern, responsive web application for creating beautiful digital portfolios and resumes. Built with React, TypeScript, and Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/bdb95ebf-e559-49a2-ab98-69b3d6452f98
+## 🚀 Key Features
 
-## How can I edit this code?
+- **Beautiful Landing Page** with animated particle effects
+- **User Authentication** system ready for integration
+- **Interactive Dashboard** with portfolio analytics
+- **Template Library** with customizable designs
+- **Collapsible Sidebar Navigation** for seamless browsing
+- **Fully Responsive Design** optimized for all devices
+- **Professional UI Components** powered by shadcn/ui
 
-There are several ways of editing your application.
+## 📦 Technology Stack
 
-**Use Lovable**
+- **Frontend**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with semantic design tokens
+- **Routing**: React Router v6
+- **State Management**: TanStack Query (React Query)
+- **UI Components**: Radix UI + shadcn/ui
+- **Icons**: Lucide React
+- **Animations**: Particles.js for engaging effects
+- **Build Tool**: Vite for fast development
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bdb95ebf-e559-49a2-ab98-69b3d6452f98) and start prompting.
+## 🏗️ Project Structure
 
-Changes made via Lovable will be committed automatically to this repo.
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # shadcn/ui component library
+│   ├── AppSidebar.tsx  # Main navigation sidebar
+│   ├── DashboardLayout.tsx
+│   ├── Navigation.tsx
+│   ├── HeroSection.tsx
+│   └── ...
+├── pages/              # Application pages
+│   ├── Landing.tsx     # Public landing page
+│   ├── Auth.tsx        # Authentication page
+│   ├── Dashboard.tsx   # User dashboard
+│   ├── Portfolios.tsx  # Portfolio management
+│   ├── Templates.tsx   # Template library
+│   ├── History.tsx     # Edit history
+│   ├── Profile.tsx     # User profile
+│   └── Settings.tsx    # App settings
+├── lib/                # Utility functions
+├── hooks/              # Custom React hooks
+├── App.tsx             # Root component with routing
+├── main.tsx            # Application entry point
+└── index.css           # Global styles & design tokens
+```
 
-**Use your preferred IDE**
+## 🎨 Design System
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Professional blue and white color scheme using HSL semantic tokens:
+- **Primary**: Brand blue colors
+- **Secondary**: Supporting UI colors
+- **Accent**: Highlight and interactive elements
+- **Muted**: Subtle backgrounds and borders
+- **Destructive**: Error and warning states
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+All components use the design system tokens from `src/index.css` - no hardcoded colors.
 
-Follow these steps:
+## 🚦 Getting Started
+
+### Prerequisites
+- Node.js 18+ or Bun
+- npm, yarn, or bun package manager
+
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Navigate to project directory
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at [http://localhost:5173](http://localhost:5173)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📱 Application Routes
+
+- `/` - Landing page with features and templates
+- `/auth` - Sign in / Sign up page
+- `/dashboard` - Main user dashboard with stats
+- `/portfolios` - Portfolio management interface
+- `/templates` - Browse available templates
+- `/history` - View editing history
+- `/profile` - User profile management
+- `/settings` - Application settings
+
+## 🧩 Core Components
+
+### AppSidebar
+Collapsible navigation sidebar with:
+- Active route highlighting
+- User profile section
+- AI Assistant (coming soon)
+- Smooth collapse/expand animations
+
+### DashboardLayout
+Wrapper for authenticated pages providing:
+- Sidebar integration
+- Sticky header with toggle
+- Consistent page structure
+
+### Landing Sections
+- **Navigation**: Header with CTA buttons
+- **HeroSection**: Animated hero with particles
+- **FeaturesSection**: Key features showcase
+- **ComparisonSection**: Traditional vs digital
+- **TemplatesSection**: Template previews
+
+## 📝 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint checks
+
+## 🌐 Deployment
+
+### Deploy with Lovable
+1. Open your [Lovable Project](https://lovable.dev/projects/bdb95ebf-e559-49a2-ab98-69b3d6452f98)
+2. Click Share → Publish
+3. Your app will be live instantly
+
+### Connect Custom Domain
+1. Navigate to Project > Settings > Domains
+2. Click "Connect Domain"
+3. Follow the [custom domain setup guide](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## 💻 Development Guidelines
+
+### Code Style
+- Use TypeScript for type safety
+- Functional components with hooks
+- Small, focused components
+- JSDoc comments for complex logic
+- Semantic HTML elements
+- Design system tokens (no hardcoded colors)
+
+### Component Pattern
+```typescript
+/**
+ * Component description
+ */
+import { Component } from "react";
+
+interface Props {
+  // Type definitions
+}
+
+const MyComponent = ({ prop }: Props) => {
+  // Logic here
+  return (
+    // JSX here
+  );
+};
+
+export default MyComponent;
+```
+
+## 🔧 How to Edit This Code
+
+**Use Lovable (Recommended)**
+- Visit the [Lovable Project](https://lovable.dev/projects/bdb95ebf-e559-49a2-ab98-69b3d6452f98)
+- Changes are auto-committed to this repo
+
+**Use Your IDE**
+- Clone the repo and work locally
+- Push changes to sync with Lovable
+- Requires Node.js & npm ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
+
+**Edit in GitHub**
+- Click the "Edit" button (pencil icon) on any file
+- Make changes and commit directly
 
 **Use GitHub Codespaces**
+- Click "Code" → "Codespaces" → "New codespace"
+- Edit in a full VS Code environment
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🎯 Roadmap
 
-## What technologies are used for this project?
+- [ ] Backend integration with authentication
+- [ ] Database integration for portfolios
+- [ ] AI-powered content suggestions
+- [ ] Drag-and-drop portfolio editor
+- [ ] PDF export functionality
+- [ ] Analytics dashboard
+- [ ] Collaboration features
+- [ ] Multi-language support
 
-This project is built with:
+## 📄 License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+© 2024 PortfolioBuilder. All rights reserved.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/bdb95ebf-e559-49a2-ab98-69b3d6452f98) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Built with ❤️ using React, TypeScript, and Lovable

@@ -1,9 +1,20 @@
+/**
+ * Dashboard Page
+ * 
+ * Main user dashboard displaying:
+ * - Welcome message with user name
+ * - Statistics cards (portfolios, views, visitors)
+ * - Recent portfolios list with actions
+ * - Quick access to create new portfolio
+ */
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus, Eye, Edit, Trash2, TrendingUp, Users, BarChart } from "lucide-react";
 
 const Dashboard = () => {
+  // Mock data - will be replaced with API calls
   const portfolios = [
     { id: 1, title: "My Professional Portfolio", template: "Modern Minimal", lastEdited: "2 hours ago" },
     { id: 2, title: "Creative Showcase", template: "Creative Bold", lastEdited: "1 day ago" },
