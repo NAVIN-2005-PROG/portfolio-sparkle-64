@@ -13,7 +13,7 @@ import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { ComparisonSection } from "@/components/ComparisonSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
-import { TemplatesSection } from "@/components/TemplatesSection";
+import { AboutSection } from "@/components/AboutSection";
 
 const Landing = () => {
   return (
@@ -22,7 +22,7 @@ const Landing = () => {
       <HeroSection />
       <FeaturesSection />
       <ComparisonSection />
-      <TemplatesSection />
+      <AboutSection />
       
       <footer className="bg-secondary/50 py-8 sm:py-12 border-t">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

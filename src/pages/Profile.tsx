@@ -24,7 +24,7 @@ const Profile = () => {
             <div className="flex items-center gap-6">
               <Avatar className="w-24 h-24">
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  JD
+                  P
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
@@ -47,12 +47,12 @@ const Profile = () => {
                   <Label htmlFor="firstName">First Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input id="firstName" defaultValue="John" className="pl-10" />
+                    <Input id="firstName" defaultValue="Poovi" className="pl-10" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" />
+                  <Input id="lastName" defaultValue="" />
                 </div>
               </div>
 
@@ -63,7 +63,7 @@ const Profile = () => {
                   <Input
                     id="email"
                     type="email"
-                    defaultValue="john@example.com"
+                    defaultValue="poovi@example.com"
                     className="pl-10"
                   />
                 </div>
@@ -75,7 +75,7 @@ const Profile = () => {
                   id="bio"
                   placeholder="Tell us about yourself..."
                   rows={4}
-                  defaultValue="Passionate developer and designer creating beautiful digital experiences."
+                  defaultValue="Creative professional building stunning portfolios and digital experiences."
                 />
               </div>
 
@@ -108,6 +108,38 @@ const Profile = () => {
             <div className="flex gap-4 mt-6">
               <Button>Save Changes</Button>
               <Button variant="outline">Cancel</Button>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-bold mb-6">Subscription & Payment</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg">
+                <div>
+                  <p className="font-medium">Current Plan</p>
+                  <p className="text-sm text-muted-foreground">Free Plan</p>
+                </div>
+                <Button onClick={() => window.location.href = '/subscriptions'}>
+                  Upgrade Plan
+                </Button>
+              </div>
+              
+              <div className="pt-4 border-t">
+                <h3 className="font-medium mb-3">Payment Methods</h3>
+                <div className="space-y-2">
+                  <div className="p-3 border rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-6 bg-gradient-to-r from-blue-600 to-blue-400 rounded"></div>
+                      <div>
+                        <p className="text-sm font-medium">•••• •••• •••• 4242</p>
+                        <p className="text-xs text-muted-foreground">Expires 12/25</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost">Remove</Button>
+                  </div>
+                  <Button variant="outline" className="w-full">Add Payment Method</Button>
+                </div>
+              </div>
             </div>
           </Card>
 

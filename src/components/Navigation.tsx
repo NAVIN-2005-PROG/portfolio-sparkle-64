@@ -32,12 +32,11 @@ export const Navigation = () => {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg sm:text-xl">P</span>
-            </div>
-            <span className="font-bold text-lg sm:text-xl text-foreground">PortfolioBuilder</span>
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Link to="/subscriptions" className="flex items-center space-x-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
+              <span className="text-sm font-semibold text-primary">Subscription</span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
@@ -54,15 +53,12 @@ export const Navigation = () => {
               Compare
             </button>
             <button
-              onClick={() => scrollToSection("templates")}
+              onClick={() => scrollToSection("about")}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Templates
+              About
             </button>
-            <Button variant="ghost" onClick={() => navigate("/auth?mode=signin")}>
-              Sign In
-            </Button>
-            <Button onClick={() => navigate("/auth?mode=signup")}>Get Started</Button>
+            <Button onClick={() => navigate("/dashboard")}>Get Started</Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -91,15 +87,12 @@ export const Navigation = () => {
                 Compare
               </button>
               <button
-                onClick={() => scrollToSection("templates")}
+                onClick={() => scrollToSection("about")}
                 className="text-left text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
               >
-                Templates
+                About
               </button>
-              <Button variant="ghost" onClick={() => navigate("/auth?mode=signin")} className="justify-start">
-                Sign In
-              </Button>
-              <Button onClick={() => navigate("/auth?mode=signup")}>Get Started</Button>
+              <Button onClick={() => navigate("/dashboard")}>Get Started</Button>
             </div>
           </div>
         )}

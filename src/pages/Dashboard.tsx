@@ -25,7 +25,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, John!</h1>
+            <h1 className="text-3xl font-bold mb-2">Welcome back, Poovi!</h1>
             <p className="text-muted-foreground">Manage your digital portfolios</p>
           </div>
           <Button className="gap-2">
@@ -34,15 +34,7 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 hover:shadow-lg transition-all border-2 hover:border-primary/20">
-            <div className="flex items-center justify-between mb-2">
-              <BarChart className="w-8 h-8 text-primary" />
-              <span className="text-xs text-muted-foreground">+12%</span>
-            </div>
-            <div className="text-3xl font-bold text-primary mb-1">2</div>
-            <p className="text-muted-foreground">Active Portfolios</p>
-          </Card>
+        <div className="grid sm:grid-cols-2 gap-6 mb-8">
           <Card className="p-6 hover:shadow-lg transition-all border-2 hover:border-primary/20">
             <div className="flex items-center justify-between mb-2">
               <TrendingUp className="w-8 h-8 text-primary" />

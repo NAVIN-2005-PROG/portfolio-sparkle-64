@@ -71,7 +71,7 @@ export const AppSidebar = () => {
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-primary-foreground font-bold text-sm">P</span>
+            <span className="text-primary-foreground font-bold text-sm"></span>
           </div>
           {!isCollapsed && (
             <span className="font-bold text-lg whitespace-nowrap">PortfolioBuilder</span>
@@ -137,19 +137,19 @@ export const AppSidebar = () => {
             <>
               <Avatar className="w-8 h-8">
                 <AvatarFallback className="bg-primary text-primary-foreground">
-                  JD
+                  P
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">John Doe</p>
-                <p className="text-xs text-muted-foreground truncate">john@example.com</p>
+                <p className="text-sm font-medium truncate">Poovi</p>
+                <p className="text-xs text-muted-foreground truncate">poovi@example.com</p>
               </div>
             </>
           )}
           {isCollapsed && (
             <Avatar className="w-8 h-8 mx-auto">
               <AvatarFallback className="bg-primary text-primary-foreground">
-                JD
+                P
               </AvatarFallback>
             </Avatar>
           )}

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -7,6 +8,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bell, Lock, Palette, Globe } from "lucide-react";
 
 const Settings = () => {
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
+  const [animations, setAnimations] = useState(true);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else if (theme === "light") {
+      root.classList.remove("dark");
+    } else {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      if (systemTheme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    }
+  }, [theme]);
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
@@ -132,15 +152,30 @@ const Settings = () => {
                 <div className="space-y-3">
                   <Label>Theme</Label>
                   <div className="grid grid-cols-3 gap-4">
-                    <button className="p-4 border-2 border-primary rounded-lg bg-white">
+                    <button 
+                      onClick={() => setTheme("light")}
+                      className={`p-4 border-2 rounded-lg transition-all ${
+                        theme === "light" ? "border-primary" : "border-transparent hover:border-muted"
+                      }`}
+                    >
                       <div className="w-full h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded mb-2"></div>
                       <p className="text-sm font-medium">Light</p>
                     </button>
-                    <button className="p-4 border-2 border-transparent hover:border-muted rounded-lg">
+                    <button 
+                      onClick={() => setTheme("dark")}
+                      className={`p-4 border-2 rounded-lg transition-all ${
+                        theme === "dark" ? "border-primary" : "border-transparent hover:border-muted"
+                      }`}
+                    >
                       <div className="w-full h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded mb-2"></div>
                       <p className="text-sm font-medium">Dark</p>
                     </button>
-                    <button className="p-4 border-2 border-transparent hover:border-muted rounded-lg">
+                    <button 
+                      onClick={() => setTheme("system")}
+                      className={`p-4 border-2 rounded-lg transition-all ${
+                        theme === "system" ? "border-primary" : "border-transparent hover:border-muted"
+                      }`}
+                    >
                       <div className="w-full h-20 bg-gradient-to-br from-gray-200 via-gray-800 to-gray-200 rounded mb-2"></div>
                       <p className="text-sm font-medium">Auto</p>
                     </button>
@@ -154,7 +189,30 @@ const Settings = () => {
                       Show smooth transitions and animations
                     </p>
                   </div>
-                  <Switch id="animations" defaultChecked />
+                  <Switch 
+                    id="animations" 
+                    checked={animations}
+                    onCheckedChange={setAnimations}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="reduced-motion">Reduce Motion</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Minimize animations for better accessibility
+                    </p>
+                  </div>
+                  <Switch id="reduced-motion" />
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Font Size</Label>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">Small</Button>
+                    <Button variant="outline" size="sm" className="border-primary">Medium</Button>
+                    <Button variant="outline" size="sm">Large</Button>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -177,7 +235,7 @@ const Settings = () => {
                     <input
                       type="text"
                       placeholder="yourdomain.com"
-                      className="flex-1 px-4 py-2 border rounded-lg"
+                      className="flex-1 px-4 py-2 border rounded-lg bg-background"
                     />
                     <Button>Connect Domain</Button>
                   </div>

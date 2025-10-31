@@ -48,12 +48,12 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-background p-4">
       <Card className="w-full max-w-md p-6 sm:p-8 shadow-xl">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-4">
+          <div className="inline-flex items-center gap-2 mb-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">P</span>
+              <span className="text-primary-foreground font-bold text-xl"></span>
             </div>
             <span className="font-bold text-xl">PortfolioBuilder</span>
-          </Link>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">
             {isSignUp ? "Create your account" : "Welcome back"}
           </h1>

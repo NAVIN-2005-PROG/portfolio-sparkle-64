@@ -23,6 +23,7 @@ import Templates from "./pages/Templates";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import Subscriptions from "./pages/Subscriptions";
 import NotFound from "./pages/NotFound";
 
 // Initialize React Query client
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
           
           {/* 404 catch-all route */}
           <Route path="*" element={<NotFound />} />
