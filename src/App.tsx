@@ -20,6 +20,8 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Portfolios from "./pages/Portfolios";
 import Templates from "./pages/Templates";
+import TemplateEditor from "./pages/TemplateEditor";
+import PublicPortfolio from "./pages/PublicPortfolio";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
@@ -39,11 +41,14 @@ const App = () => (
           {/* Public routes */}
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/portfolio/:portfolioId" element={<PublicPortfolio />} />
           
-          {/* Protected routes - require authentication */}
+          {/* Protected routes */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/portfolios" element={<Portfolios />} />
           <Route path="/templates" element={<Templates />} />
+          <Route path="/editor/template/:templateId" element={<TemplateEditor />} />
+          <Route path="/editor/portfolio/:portfolioId" element={<TemplateEditor />} />
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
