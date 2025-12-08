@@ -1,43 +1,58 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Eye, Edit, Trash2, Search } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Search, Share2, Loader2, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { usePortfolios } from "@/hooks/usePortfolios";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 const Portfolios = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const portfolios = [
-    {
-      id: 1,
-      title: "My Professional Portfolio",
-      template: "Modern Minimal",
-      lastEdited: "2 hours ago",
-      views: 234,
-      status: "published",
-    },
-    {
-      id: 2,
-      title: "Creative Showcase",
-      template: "Creative Bold",
-      lastEdited: "1 day ago",
-      views: 156,
-      status: "draft",
-    },
-    {
-      id: 3,
-      title: "Developer Portfolio",
-      template: "Tech Pro",
-      lastEdited: "3 days ago",
-      views: 892,
-      status: "published",
-    },
-  ];
+  const navigate = useNavigate();
+  const { portfolios, loading, deletePortfolio } = usePortfolios();
+  const { user } = useAuth();
 
   const filteredPortfolios = portfolios.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleCopyShareLink = (shareLink: string | null) => {
+    if (!shareLink) return;
+    const fullUrl = `${window.location.origin}/portfolio/${shareLink}`;
+    navigator.clipboard.writeText(fullUrl);
+    toast.success("Share link copied to clipboard!");
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this portfolio?")) {
+      await deletePortfolio(id);
+    }
+  };
+
+  if (!user) {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold mb-4">Sign in to view your portfolios</h1>
+          <Button onClick={() => navigate("/auth")}>Sign In</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -49,7 +64,7 @@ const Portfolios = () => {
               Manage and organize your digital portfolios
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => navigate("/templates")}>
             <Plus className="w-4 h-4" />
             New Portfolio
           </Button>
@@ -76,31 +91,47 @@ const Portfolios = () => {
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold">{portfolio.title}</h3>
+                    <h3 className="text-xl font-bold">{portfolio.name}</h3>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        portfolio.status === "published"
+                        portfolio.is_public
                           ? "bg-primary/10 text-primary"
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {portfolio.status}
+                      {portfolio.is_public ? "Public" : "Private"}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <span>Template: {portfolio.template}</span>
+                    <span>Template: {portfolio.template_name}</span>
                     <span>•</span>
-                    <span>Edited {portfolio.lastEdited}</span>
-                    <span>•</span>
-                    <span>{portfolio.views} views</span>
+                    <span>
+                      Edited {formatDistanceToNow(new Date(portfolio.updated_at), { addSuffix: true })}
+                    </span>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline">
-                    <Eye className="w-4 h-4 mr-2" />
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(`/portfolio/${portfolio.share_link}`, "_blank")}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
                     View
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleCopyShareLink(portfolio.share_link)}
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/editor/portfolio/${portfolio.id}`)}
+                  >
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
                   </Button>
@@ -108,6 +139,7 @@ const Portfolios = () => {
                     size="sm"
                     variant="outline"
                     className="text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(portfolio.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -117,7 +149,19 @@ const Portfolios = () => {
           ))}
         </div>
 
-        {filteredPortfolios.length === 0 && (
+        {portfolios.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">
+              You haven't created any portfolios yet
+            </p>
+            <Button onClick={() => navigate("/templates")}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Portfolio
+            </Button>
+          </div>
+        )}
+
+        {portfolios.length > 0 && filteredPortfolios.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">No portfolios found</p>
             <Button variant="outline" onClick={() => setSearchQuery("")}>

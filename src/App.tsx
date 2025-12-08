@@ -6,6 +6,7 @@
  * - Toast notifications (Toaster and Sonner)
  * - Tooltip provider for UI tooltips
  * - React Router for navigation
+ * - Authentication Provider
  */
 
 import { Toaster } from "@/components/ui/toaster";
@@ -13,6 +14,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 
 // Page imports
 import Landing from "./pages/Landing";
@@ -33,32 +35,34 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/portfolio/:portfolioId" element={<PublicPortfolio />} />
-          
-          {/* Protected routes */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/portfolios" element={<Portfolios />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/editor/template/:templateId" element={<TemplateEditor />} />
-          <Route path="/editor/portfolio/:portfolioId" element={<TemplateEditor />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/subscriptions" element={<Subscriptions />} />
-          
-          {/* 404 catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/portfolio/:portfolioId" element={<PublicPortfolio />} />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/portfolios" element={<Portfolios />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/editor/template/:templateId" element={<TemplateEditor />} />
+            <Route path="/editor/portfolio/:portfolioId" element={<TemplateEditor />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
+            
+            {/* 404 catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

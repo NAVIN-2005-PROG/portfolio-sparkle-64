@@ -23,20 +23,29 @@ import {
   Briefcase,
   GraduationCap,
   Mail,
-  Palette
+  Palette,
+  Loader2
 } from 'lucide-react';
 import { templates, PortfolioTemplate, defaultUserData } from '@/data/templates';
-import { savePortfolio, updatePortfolio, getPortfolioById, createPortfolioData } from '@/lib/portfolio-storage';
 import { toast } from 'sonner';
 import { PortfolioPreview } from '@/components/PortfolioPreview';
+import { usePortfolios } from '@/hooks/usePortfolios';
+import { useAuth } from '@/hooks/useAuth';
+import { Json } from '@/integrations/supabase/types';
 
 const TemplateEditor = () => {
   const { templateId, portfolioId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { createPortfolio, updatePortfolio, getPortfolioById } = usePortfolios();
   
   const [template, setTemplate] = useState<PortfolioTemplate | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [portfolioName, setPortfolioName] = useState('My Portfolio');
+  const [currentPortfolioId, setCurrentPortfolioId] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   
   // Form data state
   const [formData, setFormData] = useState({
@@ -61,47 +70,58 @@ const TemplateEditor = () => {
   });
 
   useEffect(() => {
-    // Load existing portfolio or template
-    if (portfolioId) {
-      const savedPortfolio = getPortfolioById(portfolioId);
-      if (savedPortfolio) {
-        const foundTemplate = templates.find(t => t.id === savedPortfolio.templateId);
+    const loadData = async () => {
+      setLoading(true);
+      
+      if (portfolioId) {
+        // Load existing portfolio from database
+        const savedPortfolio = await getPortfolioById(portfolioId);
+        if (savedPortfolio) {
+          const foundTemplate = templates.find(t => t.id === savedPortfolio.template_id);
+          setTemplate(foundTemplate || null);
+          setPortfolioName(savedPortfolio.name);
+          setCurrentPortfolioId(savedPortfolio.id);
+          setShareLink(savedPortfolio.share_link);
+          
+          // Restore form data from saved portfolio
+          const data = savedPortfolio.data as Record<string, unknown>;
+          setFormData({
+            name: (data?.name as string) || defaultUserData.name,
+            title: (data?.title as string) || defaultUserData.title,
+            email: (data?.email as string) || defaultUserData.email,
+            phone: (data?.phone as string) || defaultUserData.phone,
+            location: (data?.location as string) || defaultUserData.location,
+            bio: (data?.bio as string) || defaultUserData.bio,
+            skills: (data?.skills as string[]) || defaultUserData.skills,
+            linkedin: (data?.linkedin as string) || defaultUserData.social.linkedin,
+            github: (data?.github as string) || defaultUserData.social.github,
+            twitter: (data?.twitter as string) || defaultUserData.social.twitter,
+            experience: (data?.experience as typeof defaultUserData.experience) || defaultUserData.experience,
+            projects: (data?.projects as typeof defaultUserData.projects) || defaultUserData.projects,
+            education: (data?.education as typeof defaultUserData.education) || defaultUserData.education,
+          });
+          
+          const style = savedPortfolio.style as Record<string, unknown>;
+          setCustomColors({
+            primaryColor: (style?.primaryColor as string) || '',
+            secondaryColor: (style?.secondaryColor as string) || '',
+          });
+        }
+      } else if (templateId) {
+        const foundTemplate = templates.find(t => t.id === parseInt(templateId));
         setTemplate(foundTemplate || null);
-        setPortfolioName(savedPortfolio.name);
-        
-        // Restore form data from saved portfolio
-        const data = savedPortfolio.data;
-        setFormData({
-          name: (data.name as string) || defaultUserData.name,
-          title: (data.title as string) || defaultUserData.title,
-          email: (data.email as string) || defaultUserData.email,
-          phone: (data.phone as string) || defaultUserData.phone,
-          location: (data.location as string) || defaultUserData.location,
-          bio: (data.bio as string) || defaultUserData.bio,
-          skills: (data.skills as string[]) || defaultUserData.skills,
-          linkedin: (data.linkedin as string) || defaultUserData.social.linkedin,
-          github: (data.github as string) || defaultUserData.social.github,
-          twitter: (data.twitter as string) || defaultUserData.social.twitter,
-          experience: defaultUserData.experience,
-          projects: defaultUserData.projects,
-          education: defaultUserData.education,
-        });
-        
-        setCustomColors({
-          primaryColor: savedPortfolio.style.primaryColor,
-          secondaryColor: savedPortfolio.style.secondaryColor,
-        });
+        if (foundTemplate) {
+          setCustomColors({
+            primaryColor: foundTemplate.style.primaryColor,
+            secondaryColor: foundTemplate.style.secondaryColor,
+          });
+        }
       }
-    } else if (templateId) {
-      const foundTemplate = templates.find(t => t.id === parseInt(templateId));
-      setTemplate(foundTemplate || null);
-      if (foundTemplate) {
-        setCustomColors({
-          primaryColor: foundTemplate.style.primaryColor,
-          secondaryColor: foundTemplate.style.secondaryColor,
-        });
-      }
-    }
+      
+      setLoading(false);
+    };
+    
+    loadData();
   }, [templateId, portfolioId]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -125,59 +145,80 @@ const TemplateEditor = () => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!template) return;
+    
+    if (!user) {
+      toast.error('Please sign in to save your portfolio');
+      navigate('/auth?mode=signup');
+      return;
+    }
 
+    setSaving(true);
+    
     const portfolioData = {
       ...formData,
       skills: formData.skills.filter(s => s.trim() !== ''),
-    };
+    } as Json;
 
     const style = {
       ...template.style,
       primaryColor: customColors.primaryColor || template.style.primaryColor,
       secondaryColor: customColors.secondaryColor || template.style.secondaryColor,
-    };
+    } as Json;
 
-    if (portfolioId) {
+    if (currentPortfolioId) {
       // Update existing portfolio
-      const updated = updatePortfolio(portfolioId, {
+      const success = await updatePortfolio(currentPortfolioId, {
         name: portfolioName,
         data: portfolioData,
         style,
       });
       
-      if (updated) {
-        toast.success('Portfolio updated successfully!');
+      if (!success) {
+        setSaving(false);
+        return;
       }
     } else {
       // Save new portfolio
-      const saved = savePortfolio({
-        templateId: template.id,
-        templateName: template.name,
-        name: portfolioName,
-        updatedAt: new Date().toISOString(),
-        data: portfolioData,
-        style,
-      });
+      const saved = await createPortfolio(
+        template.id,
+        template.name,
+        portfolioName,
+        portfolioData,
+        style
+      );
       
-      toast.success('Portfolio saved successfully!');
-      navigate(`/editor/portfolio/${saved.id}`);
+      if (saved) {
+        setCurrentPortfolioId(saved.id);
+        setShareLink(saved.share_link);
+        navigate(`/editor/portfolio/${saved.id}`, { replace: true });
+      }
     }
+    
+    setSaving(false);
   };
 
   const handleShare = () => {
-    if (!portfolioId) {
+    if (!shareLink) {
       toast.error('Please save your portfolio first to get a shareable link.');
       return;
     }
     
-    const portfolio = getPortfolioById(portfolioId);
-    if (portfolio) {
-      navigator.clipboard.writeText(portfolio.shareLink);
-      toast.success('Share link copied to clipboard!');
-    }
+    const fullUrl = `${window.location.origin}/portfolio/${shareLink}`;
+    navigator.clipboard.writeText(fullUrl);
+    toast.success('Share link copied to clipboard!');
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!template) {
     return (
@@ -226,12 +267,16 @@ const TemplateEditor = () => {
               <Eye className="h-4 w-4 mr-2" />
               Preview
             </Button>
-            <Button variant="outline" onClick={handleShare}>
+            <Button variant="outline" onClick={handleShare} disabled={!shareLink}>
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
-            <Button onClick={handleSave}>
-              <Save className="h-4 w-4 mr-2" />
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
               Save
             </Button>
           </div>
@@ -471,7 +516,7 @@ const TemplateEditor = () => {
           {/* Contact Tab */}
           <TabsContent value="contact">
             <Card className="p-6 space-y-6">
-              <h3 className="text-lg font-semibold">Contact & Social</h3>
+              <h3 className="text-lg font-semibold">Contact Information</h3>
               
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -488,43 +533,42 @@ const TemplateEditor = () => {
                   <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
+                    type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="+91 98765 43210"
+                    placeholder="+1 234 567 890"
                   />
                 </div>
               </div>
 
+              <h4 className="font-medium pt-4">Social Links</h4>
               <div className="space-y-4">
-                <h4 className="font-medium">Social Links</h4>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin">LinkedIn</Label>
-                    <Input
-                      id="linkedin"
-                      value={formData.linkedin}
-                      onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                      placeholder="linkedin.com/in/username"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="github">GitHub</Label>
-                    <Input
-                      id="github"
-                      value={formData.github}
-                      onChange={(e) => handleInputChange('github', e.target.value)}
-                      placeholder="github.com/username"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="twitter">Twitter</Label>
-                    <Input
-                      id="twitter"
-                      value={formData.twitter}
-                      onChange={(e) => handleInputChange('twitter', e.target.value)}
-                      placeholder="@username"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin">LinkedIn</Label>
+                  <Input
+                    id="linkedin"
+                    value={formData.linkedin}
+                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                    placeholder="linkedin.com/in/yourprofile"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="github">GitHub</Label>
+                  <Input
+                    id="github"
+                    value={formData.github}
+                    onChange={(e) => handleInputChange('github', e.target.value)}
+                    placeholder="github.com/yourusername"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="twitter">Twitter</Label>
+                  <Input
+                    id="twitter"
+                    value={formData.twitter}
+                    onChange={(e) => handleInputChange('twitter', e.target.value)}
+                    placeholder="@yourhandle"
+                  />
                 </div>
               </div>
             </Card>
@@ -533,18 +577,18 @@ const TemplateEditor = () => {
           {/* Style Tab */}
           <TabsContent value="style">
             <Card className="p-6 space-y-6">
-              <h3 className="text-lg font-semibold">Customize Style</h3>
+              <h3 className="text-lg font-semibold">Customize Colors</h3>
               
               <div className="grid sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label htmlFor="primaryColor">Primary Color</Label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <input
                       type="color"
                       id="primaryColor"
                       value={customColors.primaryColor || template.style.primaryColor}
                       onChange={(e) => setCustomColors(prev => ({ ...prev, primaryColor: e.target.value }))}
-                      className="w-12 h-10 rounded cursor-pointer"
+                      className="w-12 h-12 rounded cursor-pointer"
                     />
                     <Input
                       value={customColors.primaryColor || template.style.primaryColor}
@@ -553,15 +597,15 @@ const TemplateEditor = () => {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label htmlFor="secondaryColor">Secondary Color</Label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <input
                       type="color"
                       id="secondaryColor"
                       value={customColors.secondaryColor || template.style.secondaryColor}
                       onChange={(e) => setCustomColors(prev => ({ ...prev, secondaryColor: e.target.value }))}
-                      className="w-12 h-10 rounded cursor-pointer"
+                      className="w-12 h-12 rounded cursor-pointer"
                     />
                     <Input
                       value={customColors.secondaryColor || template.style.secondaryColor}
@@ -572,18 +616,16 @@ const TemplateEditor = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Font Family</Label>
-                <p className="text-sm text-muted-foreground">
-                  Current font: {template.style.fontFamily}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Layout Style</Label>
-                <p className="text-sm text-muted-foreground capitalize">
-                  {template.style.layout}
-                </p>
+              <div className="pt-4">
+                <h4 className="font-medium mb-3">Preview</h4>
+                <div 
+                  className="h-32 rounded-lg flex items-center justify-center text-white font-bold"
+                  style={{
+                    background: `linear-gradient(135deg, ${customColors.primaryColor || template.style.primaryColor}, ${customColors.secondaryColor || template.style.secondaryColor})`
+                  }}
+                >
+                  Your Portfolio Colors
+                </div>
               </div>
             </Card>
           </TabsContent>
