@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Github, Linkedin, Mail } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Github, Linkedin, Mail, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -14,34 +16,87 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     setIsSignUp(mode === "signup");
   }, [mode]);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Mock authentication for now
-    toast({
-      title: isSignUp ? "Account created!" : "Welcome back!",
-      description: isSignUp 
-        ? "Your account has been created successfully." 
-        : "You've been signed in successfully.",
-    });
-    
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1000);
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        // Sign up
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              first_name: name.split(" ")[0] || "Poovi",
+            },
+          },
+        });
+
+        if (error) {
+          if (error.message.includes("already registered")) {
+            toast.error("This email is already registered. Please sign in instead.");
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
+
+        toast.success("Account created! You can now sign in.");
+        navigate("/dashboard");
+      } else {
+        // Sign in
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast.error("Invalid email or password. Please try again.");
+          } else {
+            toast.error(error.message);
+          }
+          return;
+        }
+
+        toast.success("Welcome back!");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOAuthLogin = (provider: string) => {
-    toast({
-      title: `Connecting to ${provider}`,
-      description: "Please wait...",
+  const handleOAuthLogin = async (provider: "google" | "linkedin_oidc" | "github") => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
     });
+
+    if (error) {
+      toast.error(`Failed to connect with ${provider}: ${error.message}`);
+    }
   };
 
   return (
@@ -50,9 +105,9 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl"></span>
+              <span className="text-primary-foreground font-bold text-xl">P</span>
             </div>
-            <span className="font-bold text-xl">PortfolioBuilder</span>
+            <span className="font-bold text-xl">Poovi</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">
             {isSignUp ? "Create your account" : "Welcome back"}
@@ -68,7 +123,8 @@ const Auth = () => {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => handleOAuthLogin("Google")}
+            onClick={() => handleOAuthLogin("google")}
+            disabled={loading}
           >
             <Mail className="w-5 h-5 mr-2" />
             Continue with Google
@@ -76,7 +132,8 @@ const Auth = () => {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => handleOAuthLogin("LinkedIn")}
+            onClick={() => handleOAuthLogin("linkedin_oidc")}
+            disabled={loading}
           >
             <Linkedin className="w-5 h-5 mr-2" />
             Continue with LinkedIn
@@ -84,7 +141,8 @@ const Auth = () => {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => handleOAuthLogin("GitHub")}
+            onClick={() => handleOAuthLogin("github")}
+            disabled={loading}
           >
             <Github className="w-5 h-5 mr-2" />
             Continue with GitHub
@@ -111,6 +169,7 @@ const Auth = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
           )}
@@ -123,6 +182,7 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -134,9 +194,12 @@ const Auth = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
+              disabled={loading}
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {isSignUp ? "Create Account" : "Sign In"}
           </Button>
         </form>
@@ -151,6 +214,7 @@ const Auth = () => {
               navigate(`/auth?mode=${isSignUp ? "signin" : "signup"}`);
             }}
             className="text-primary hover:underline font-medium"
+            disabled={loading}
           >
             {isSignUp ? "Sign in" : "Sign up"}
           </button>

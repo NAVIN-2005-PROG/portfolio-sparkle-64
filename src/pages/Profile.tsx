@@ -6,51 +6,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Mail, User, MapPin, Link as LinkIcon, Trash2 } from "lucide-react";
+import { Camera, Mail, User, MapPin, Link as LinkIcon, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-const PROFILE_STORAGE_KEY = "poovi_profile";
-
-interface ProfileData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  bio: string;
-  location: string;
-  website: string;
-  photo: string | null;
-}
-
-const defaultProfile: ProfileData = {
-  firstName: "Poovi",
-  lastName: "",
-  email: "poovi@example.com",
-  bio: "Creative professional building stunning portfolios and digital experiences.",
-  location: "San Francisco, CA",
-  website: "",
-  photo: null,
-};
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 
 const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [profile, setProfile] = useState<ProfileData>(defaultProfile);
+  const { profile, loading: profileLoading, updateProfile } = useProfile();
+  const { user } = useAuth();
+  
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    bio: "",
+    location: "",
+    website: "",
+  });
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Load profile from localStorage on mount
+  // Sync form data with profile
   useEffect(() => {
-    const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setProfile(parsed);
-      } catch (error) {
-        console.error("Error loading profile:", error);
-      }
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        bio: profile.bio || "",
+        location: profile.location || "",
+        website: profile.website || "",
+      });
+      setPhotoUrl(profile.photo_url);
     }
-  }, []);
+  }, [profile]);
 
-  const handleInputChange = (field: keyof ProfileData, value: string) => {
-    setProfile((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   };
 
@@ -62,25 +54,22 @@ const Profile = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
     }
 
-    // Validate file size (2MB max)
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Image size should be less than 2MB");
       return;
     }
 
-    // Convert to base64 for localStorage
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
-      setProfile((prev) => ({ ...prev, photo: base64 }));
+      setPhotoUrl(base64);
       setHasChanges(true);
-      toast.success("Photo updated successfully!");
+      toast.success("Photo updated!");
     };
     reader.onerror = () => {
       toast.error("Failed to read image file");
@@ -89,32 +78,47 @@ const Profile = () => {
   };
 
   const handleRemovePhoto = () => {
-    setProfile((prev) => ({ ...prev, photo: null }));
+    setPhotoUrl(null);
     setHasChanges(true);
     toast.success("Photo removed");
   };
 
-  const handleSave = () => {
-    try {
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  const handleSave = async () => {
+    setSaving(true);
+    const success = await updateProfile({
+      ...formData,
+      photo_url: photoUrl,
+    });
+    setSaving(false);
+    if (success) {
       setHasChanges(false);
-      toast.success("Profile saved successfully!");
-    } catch (error) {
-      toast.error("Failed to save profile");
-      console.error("Error saving profile:", error);
     }
   };
 
   const handleCancel = () => {
-    const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
-    if (saved) {
-      setProfile(JSON.parse(saved));
-    } else {
-      setProfile(defaultProfile);
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        bio: profile.bio || "",
+        location: profile.location || "",
+        website: profile.website || "",
+      });
+      setPhotoUrl(profile.photo_url);
     }
     setHasChanges(false);
     toast.info("Changes discarded");
   };
+
+  if (profileLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -131,11 +135,11 @@ const Profile = () => {
             <h2 className="text-xl font-bold mb-6">Profile Picture</h2>
             <div className="flex items-center gap-6">
               <Avatar className="w-24 h-24">
-                {profile.photo ? (
-                  <AvatarImage src={profile.photo} alt="Profile" />
+                {photoUrl ? (
+                  <AvatarImage src={photoUrl} alt="Profile" />
                 ) : null}
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  {profile.firstName?.[0] || "P"}
+                  {formData.first_name?.[0] || user?.email?.[0]?.toUpperCase() || "P"}
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
@@ -151,7 +155,7 @@ const Profile = () => {
                     <Camera className="w-4 h-4" />
                     Change Photo
                   </Button>
-                  {profile.photo && (
+                  {photoUrl && (
                     <Button variant="outline" size="icon" onClick={handleRemovePhoto}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -174,8 +178,8 @@ const Profile = () => {
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       id="firstName"
-                      value={profile.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      value={formData.first_name}
+                      onChange={(e) => handleInputChange("first_name", e.target.value)}
                       className="pl-10"
                     />
                   </div>
@@ -184,8 +188,8 @@ const Profile = () => {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    value={profile.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    value={formData.last_name}
+                    onChange={(e) => handleInputChange("last_name", e.target.value)}
                   />
                 </div>
               </div>
@@ -197,11 +201,12 @@ const Profile = () => {
                   <Input
                     id="email"
                     type="email"
-                    value={profile.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="pl-10"
+                    value={user?.email || ""}
+                    disabled
+                    className="pl-10 bg-muted"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
               </div>
 
               <div className="space-y-2">
@@ -210,7 +215,7 @@ const Profile = () => {
                   id="bio"
                   placeholder="Tell us about yourself..."
                   rows={4}
-                  value={profile.bio}
+                  value={formData.bio}
                   onChange={(e) => handleInputChange("bio", e.target.value)}
                 />
               </div>
@@ -221,7 +226,7 @@ const Profile = () => {
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="location"
-                    value={profile.location}
+                    value={formData.location}
                     onChange={(e) => handleInputChange("location", e.target.value)}
                     className="pl-10"
                   />
@@ -236,7 +241,7 @@ const Profile = () => {
                     id="website"
                     type="url"
                     placeholder="https://yourwebsite.com"
-                    value={profile.website}
+                    value={formData.website}
                     onChange={(e) => handleInputChange("website", e.target.value)}
                     className="pl-10"
                   />
@@ -245,10 +250,11 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-4 mt-6">
-              <Button onClick={handleSave} disabled={!hasChanges}>
+              <Button onClick={handleSave} disabled={!hasChanges || saving}>
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Save Changes
               </Button>
-              <Button variant="outline" onClick={handleCancel} disabled={!hasChanges}>
+              <Button variant="outline" onClick={handleCancel} disabled={!hasChanges || saving}>
                 Cancel
               </Button>
             </div>
