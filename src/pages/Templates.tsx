@@ -104,7 +104,10 @@ const Templates = () => {
                           <Button 
                             size="sm" 
                             variant="secondary"
-                            onClick={() => handleUseTemplate(template.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUseTemplate(template.id);
+                            }}
                           >
                             <Edit className="w-4 h-4 mr-1" />
                             Use
