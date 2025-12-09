@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,9 +33,15 @@ export const Navigation = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20">
           <div className="flex items-center space-x-4">
-            <Link to="/subscriptions" className="flex items-center space-x-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
-              <span className="text-sm font-semibold text-primary">Subscription</span>
-            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/subscriptions")}
+              className="border-primary/30 hover:bg-primary/10"
+            >
+              <Crown className="w-4 h-4 mr-2 text-primary" />
+              <span className="text-sm font-semibold">Pricing</span>
+            </Button>
           </div>
 
           {/* Desktop Navigation */}
